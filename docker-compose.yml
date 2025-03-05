@@ -1,0 +1,54 @@
+﻿services:
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins01
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    restart: on-failure
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver01
+    hostname: sql01
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "1StrongPwd!!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+     test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '1StrongPwd!!' -Q 'SELECT 1' || exit 1"]
+     interval: 10s
+     retries: 10
+     start_period: 10s
+     timeout: 3s
+
+  mssqltools:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: mssql-tools01
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./InitDatabase/file01.sql:/tmp/file01.sql    
+    entrypoint: /bin/bash -c "sleep 5 && /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P '1StrongPwd!!' -Q \"CREATE DATABASE EmployeesDb;\""
+
+  flyway:
+    image: flyway/flyway
+    container_name: flyway_migrations01
+    depends_on:
+      - sqlserver
+      - mssqltools 
+    volumes:
+      - ./Migrations:/flyway/sql      
+    command: -url="jdbc:sqlserver://sql01:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
+    restart: on-failure
+
+volumes:
+  sqlserver_data:
+  jenkins_home:

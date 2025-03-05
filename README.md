@@ -6,9 +6,9 @@ This project is a CRUD API for managing employees, built with **ASP.NET 8** and 
 - **.NET 8** - Main framework for the API
 - **Entity Framework Core** - ORM for database interaction
 - **Docker** - For containerizing the application and dependencies
-- **Flyway** - Database versioning and migrations
-- **Jenkins** - CI/CD automation
 - **Database** - Microsoft SQL Server 2022 Express
+- - **Flyway** - Database versioning and migrations
+- **Jenkins** - CI/CD automation
 
 ## 📦 Project Structure
 ```
@@ -37,13 +37,13 @@ cd employeeadminportal
 
 ### 3️⃣ Start the Containers
 ```bash
-docker-compose up -d
+docker-compose -p employees_admin_portal up -d
 ```
-This will start the database, Jenkins, and the application.
+This will start the database, Jenkins and the application.
 
 ### 4️⃣ Access the API
-- **Base URL:** `http://localhost:5000/api/employees`
-- **Swagger UI:** `http://localhost:5000/swagger`
+- **Base URL:** `http://localhost:5292/api/employees`
+- **Swagger UI:** `http://localhost:5292/swagger`
 
 ## 🛠 Main Endpoints
 | Method | Endpoint            | Description                 |
@@ -55,9 +55,10 @@ This will start the database, Jenkins, and the application.
 | DELETE | `/api/employees/{id}` | Deletes an employee       |
 
 ## 📜 Database Versioning
+
 Database versioning is managed with **Flyway**. To manually run migrations:
 ```bash
-docker exec -it employee-db flyway migrate
+docker run --rm -v "$(pwd)/Migrations:/flyway/sql" flyway/flyway -url="jdbc:sqlserver://host.docker.internal:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
 ```
 
 ## 🔄 CI/CD with Jenkins
