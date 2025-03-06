@@ -30,12 +30,12 @@ namespace EmployeeAdminPortal.Controllers
         [Route("{id:guid}")]
         public IActionResult GetEmployees(Guid id)
         {
-            var employee = dbContext.Employees.Find(id);
-            if (employee is null)
+            var employeeEntity = dbContext.Employees.Find(id);
+            if (employeeEntity is null)
             {
                 return NotFound();
             }
-            return Ok(employee);
+            return Ok(employeeEntity);
         }
 
         [HttpPost]
@@ -53,6 +53,39 @@ namespace EmployeeAdminPortal.Controllers
             dbContext.SaveChanges();
 
             return StatusCode(StatusCodes.Status201Created, employeeEntity);
+        }
+
+        [HttpPut]
+        public IActionResult UpdateEmployee(EmployeeDto employeeDto)
+        {
+            var employeeEntity = dbContext.Employees.Find(employeeDto.Id);
+            if (employeeEntity is null)
+            {
+                return NotFound();
+            }
+
+            employeeEntity.Name = employeeDto.Name;
+            employeeEntity.Email = employeeDto.Email;
+            employeeEntity.Phone = employeeDto.Phone;
+            employeeEntity.Salary = employeeDto.Salary;
+
+            dbContext.SaveChanges();
+            return Ok(employeeEntity);
+        }
+
+        [HttpDelete]
+        [Route("{id:guid}")]
+        public IActionResult DeleteEmployees(Guid id)
+        {
+            var employeeEntity = dbContext.Employees.Find(id);
+            if (employeeEntity is null)
+            {
+                return NotFound();
+            }
+
+            dbContext.Employees.Remove(employeeEntity);
+            dbContext.SaveChanges();
+            return Ok();
         }
     }
 }
