@@ -1,0 +1,30 @@
+﻿pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Github') {
+            steps {
+                git branch: 'master', credentialsId: 'jen-doc-git', url: 'https://github.com/rvbrandao/employeeadminportal.git'
+            }
+        }
+
+        stage('Build') {
+           steps {
+                }
+        }
+
+        stage('Test') {
+            steps {        
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+
