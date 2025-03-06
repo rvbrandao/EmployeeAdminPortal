@@ -3,6 +3,8 @@ using EmployeeAdminPortal.Models;
 using EmployeeAdminPortal.Models.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAdminPortal.Controllers
 {
@@ -75,7 +77,7 @@ namespace EmployeeAdminPortal.Controllers
 
         [HttpDelete]
         [Route("{id:guid}")]
-        public IActionResult DeleteEmployees(Guid id)
+        public IActionResult DeleteEmployee(Guid id)
         {
             var employeeEntity = dbContext.Employees.Find(id);
             if (employeeEntity is null)
@@ -87,5 +89,46 @@ namespace EmployeeAdminPortal.Controllers
             dbContext.SaveChanges();
             return Ok();
         }
+
+        [HttpGet("search")]
+        public IActionResult SearchEmployeesByName(string name)
+        {
+            var employees = dbContext.Employees
+                .Where(e => EF.Functions.Like(e.Name, $"%{name}%"))
+                .ToList();
+
+            if (!employees.Any())
+            {
+                return NotFound(new { Message = $"No employees found with name containing '{name}'." });
+            }
+
+            return Ok(employees);
+        }
+
+        [HttpGet("complex-search")]
+        public IActionResult SearchEmployeesByComplexQuery(string? name, decimal minSalary)
+        {
+            var sqlQuery = @"
+                SELECT * 
+                FROM Employees 
+                WHERE (@name IS NULL OR Name LIKE {0})
+                AND Salary >= {1}";
+
+            
+
+            var employees = dbContext.Employees
+                 .FromSqlRaw(sqlQuery,
+                    new SqlParameter("@name", name != null ? $"%{name}%" : (object)DBNull.Value),
+                    new SqlParameter("@minSalary", minSalary))                
+                .ToList();
+
+            if (!employees.Any())
+            {
+                return NotFound(new { Message = $"No employees found with name containing '{name}' and salary >= {minSalary}." });
+            }
+
+            return Ok(employees);
+        }
+
     }
 }
