@@ -56,6 +56,8 @@ docker run -d -p 9080:8080 --name employees_api --network employees_admin_portal
 |--------|---------------------|-----------------------------|
 | GET    | `/api/employees`    | Lists all employees        |
 | GET    | `/api/employees/{id}` | Retrieves an employee by ID |
+| GET    | `/api/employees/search` | Retrieves an employee by Name |
+| GET    | `/api/employees/complex-search` | Retrieves an employee by Name or Salary |
 | POST   | `/api/employees`    | Creates a new employee     |
 | PUT    | `/api/employees/{id}` | Updates an employee       |
 | DELETE | `/api/employees/{id}` | Deletes an employee       |
