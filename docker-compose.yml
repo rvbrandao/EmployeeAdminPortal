@@ -46,7 +46,7 @@
       - mssqltools 
     volumes:
       - ./Migrations:/flyway/sql      
-    command: -url="jdbc:sqlserver://sql01:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
+    command: -url="jdbc:sqlserver://sqlserver:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
     restart: on-failure
 
 volumes:

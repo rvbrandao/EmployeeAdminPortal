@@ -36,14 +36,20 @@ cd employeeadminportal
 ```
 
 ### 3️⃣ Start the Containers
+This will start the SQL Server and Jenkins.
 ```bash
 docker-compose -p employees_admin_portal up -d
 ```
-This will start the database, Jenkins and the application.
+
+This will start the application.
+```bash
+docker build -t employees_api_v_1_0 .
+docker run -d -p 9080:8080 --name employees_api --network employees_admin_portal_default employees_api_v_1_0
+```
 
 ### 4️⃣ Access the API
-- **Base URL:** `http://localhost:5292/api/employees`
-- **Swagger UI:** `http://localhost:5292/swagger`
+- **Base URL:** `http://localhost:9080/api/employees`
+- **Swagger UI:** `http://localhost:9080/swagger`
 
 ## 🛠 Main Endpoints
 | Method | Endpoint            | Description                 |
@@ -58,7 +64,7 @@ This will start the database, Jenkins and the application.
 
 Database versioning is managed with **Flyway**. To manually run migrations:
 ```bash
-docker run --rm -v "$(pwd)/Migrations:/flyway/sql" flyway/flyway -url="jdbc:sqlserver://host.docker.internal:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
+docker run flyway/flyway -url="jdbc:sqlserver://host.docker.internal:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
 ```
 
 ## 🔄 CI/CD with Jenkins
