@@ -1,8 +1,6 @@
 ﻿pipeline {
     agent any
-
-    stages {
-        
+    stages {        
         stage('Build') {
            steps {
                echo 'Building..'
@@ -15,13 +13,7 @@
                 echo 'Checking out Github..'
                 git branch: 'master', credentialsId: 'Github-Personal-access-tokens', url: 'https://github.com/rvbrandao/employeeadminportal.git'
             }
-        }
-
-        stage('Test') {
-            steps {        
-                echo 'Running Tests..'
-            }
-        }
+        } 
     }
 
     post {
@@ -33,4 +25,3 @@
         }
     }
 }
-
