@@ -2,15 +2,17 @@
     agent any
 
     stages {
+        
+        stage('Build') {
+           steps {
+               mvn 'clean install'
+                }
+        }
+
         stage('Checkout Github') {
             steps {
                 git branch: 'master', credentialsId: 'Github-Personal-access-tokens', url: 'https://github.com/rvbrandao/employeeadminportal.git'
             }
-        }
-
-        stage('Build') {
-           steps {
-                }
         }
 
         stage('Test') {
