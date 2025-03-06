@@ -4,7 +4,7 @@
     stages {
         stage('Checkout Github') {
             steps {
-                git branch: 'master', credentialsId: 'jen-doc-git', url: 'https://github.com/rvbrandao/employeeadminportal.git'
+                git branch: 'master', credentialsId: 'Github-Personal-access-tokens', url: 'https://github.com/rvbrandao/employeeadminportal.git'
             }
         }
 
