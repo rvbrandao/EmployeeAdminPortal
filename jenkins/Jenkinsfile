@@ -5,18 +5,21 @@
         
         stage('Build') {
            steps {
+               echo 'Building..'
                mvn 'clean install'
                 }
         }
 
         stage('Checkout Github') {
             steps {
+                echo 'Checking out Github..'
                 git branch: 'master', credentialsId: 'Github-Personal-access-tokens', url: 'https://github.com/rvbrandao/employeeadminportal.git'
             }
         }
 
         stage('Test') {
             steps {        
+                echo 'Running Tests..'
             }
         }
     }
