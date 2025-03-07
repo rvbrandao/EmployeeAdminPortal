@@ -38,13 +38,13 @@ cd employeeadminportal
 ### 3️⃣ Start the Containers
 This will start the SQL Server and Jenkins.
 ```bash
-docker-compose -p employees_admin_portal up -d
+docker-compose up -d
 ```
 
 This will start the application.
 ```bash
 docker build -t employees_api_v_1_0 .
-docker run -d -p 9080:8080 --name employees_api --network employees_admin_portal_default employees_api_v_1_0
+docker run -d -p 9080:8080 --name employees_api --network dev-environment employees_api_v_1_0
 ```
 
 ### 4️⃣ Access the API
@@ -77,4 +77,21 @@ The Jenkins pipeline performs:
 ✅ **Docker image creation and publishing**  
 ✅ **API deployment**
 
+Installing .NET
+```bash
+docker exec -u root -it jenkins01 /bin/bash
 
+apt-get update && apt-get install -y apt-transport-https && apt-get install -y software-properties-common
+curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
+mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
+sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" > /etc/apt/sources.list.d/dotnetdev.list'
+apt-get update && apt-get install -y dotnet-sdk-8.0
+```
+
+You should install theses plugins:
+- .NET SDK
+- GitHub Pull Request Builder
+- Post build task
+- Docker pipeline
+- Docker commons
+- Docker

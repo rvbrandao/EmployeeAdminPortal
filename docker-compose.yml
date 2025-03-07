@@ -7,8 +7,14 @@
       - "8080:8080"
       - "50000:50000"
     restart: on-failure
+    environment:
+      - TZ=America/Sao_Paulo
+      - LANG=en_US.UTF-8
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: 
+      - dev-environment
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -22,6 +28,8 @@
     volumes:
       - sqlserver_data:/var/opt/mssql
     restart: unless-stopped
+    networks: 
+      - dev-environment
     healthcheck:
      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '1StrongPwd!!' -Q 'SELECT 1' || exit 1"]
      interval: 10s
@@ -37,6 +45,8 @@
     volumes:
       - ./InitDatabase/file01.sql:/tmp/file01.sql    
     entrypoint: /bin/bash -c "sleep 5 && /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P '1StrongPwd!!' -Q \"CREATE DATABASE EmployeesDb;\""
+    networks: 
+      - dev-environment
 
   flyway:
     image: flyway/flyway
@@ -48,7 +58,14 @@
       - ./Migrations:/flyway/sql      
     command: -url="jdbc:sqlserver://sqlserver:1433;databaseName=EmployeesDb;user=sa;password=1StrongPwd!!;encrypt=false" migrate
     restart: on-failure
+    networks: 
+      - dev-environment
 
 volumes:
   sqlserver_data:
   jenkins_home:
+  
+networks: 
+ dev-environment:
+    name: dev-environment
+    driver: bridge
