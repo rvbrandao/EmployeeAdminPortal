@@ -1,7 +1,6 @@
 ﻿using EmployeeAdminPortal.Data;
 using EmployeeAdminPortal.Models;
-using EmployeeAdminPortal.Models.Entities;
-using Microsoft.AspNetCore.Http;
+using EmployeeAdminPortal.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -13,26 +12,25 @@ namespace EmployeeAdminPortal.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        private readonly ApplicationDbContext dbContext;
+        private readonly IEmployeeRepository employeeRepository;
 
-        public EmployeesController(ApplicationDbContext dbContext)
+        public EmployeesController([FromServices] IEmployeeRepository _dbcontext)
         {
-            this.dbContext = dbContext;
-
+            employeeRepository = _dbcontext;
         }
 
         [HttpGet]
-        public IActionResult GetAllEmployees()
+        public async Task<IActionResult> GetAllEmployees()
         {
-            var allEmployees = dbContext.Employees.ToList();
+            var allEmployees = await employeeRepository.GetAllAsync();
             return Ok(allEmployees);
         }
 
         [HttpGet]
         [Route("{id:guid}")]
-        public IActionResult GetEmployees(Guid id)
+        public async Task<IActionResult> GetEmployee(Guid id)
         {
-            var employeeEntity = dbContext.Employees.Find(id);
+            var employeeEntity = await employeeRepository.GetByIdAsync(id);
             if (employeeEntity is null)
             {
                 return NotFound();
@@ -41,63 +39,56 @@ namespace EmployeeAdminPortal.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddEmployee(EmployeeDto employeeDto)
+        public async Task<IActionResult> AddEmployee(Employee employee)
         {
-            var employeeEntity = new Employee()
+            var result = await employeeRepository.AddAsync(employee);
+            if (!result)
             {
-                Name = employeeDto.Name,
-                Email = employeeDto.Email,
-                Phone = employeeDto.Phone,
-                Salary = employeeDto.Salary
-            };
-
-            dbContext.Employees.Add(employeeEntity);
-            dbContext.SaveChanges();
-
-            return StatusCode(StatusCodes.Status201Created, employeeEntity);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error adding employee.");
+            }
+            return StatusCode(StatusCodes.Status201Created, employee);
         }
 
         [HttpPut]
-        public IActionResult UpdateEmployee(EmployeeDto employeeDto)
+        public async Task<IActionResult> UpdateEmployee(Employee employee)
         {
-            var employeeEntity = dbContext.Employees.Find(employeeDto.Id);
-            if (employeeEntity is null)
+            var exists = await employeeRepository.ExistsAsync(employee.Id);
+            if (!exists)
             {
                 return NotFound();
             }
 
-            employeeEntity.Name = employeeDto.Name;
-            employeeEntity.Email = employeeDto.Email;
-            employeeEntity.Phone = employeeDto.Phone;
-            employeeEntity.Salary = employeeDto.Salary;
-
-            dbContext.SaveChanges();
-            return Ok(employeeEntity);
+            var result = await employeeRepository.UpdateAsync(employee);
+            if (!result)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating employee.");
+            }
+            return Ok(employee);
         }
 
         [HttpDelete]
         [Route("{id:guid}")]
-        public IActionResult DeleteEmployee(Guid id)
+        public async Task<IActionResult> DeleteEmployee(Guid id)
         {
-            var employeeEntity = dbContext.Employees.Find(id);
-            if (employeeEntity is null)
+            var exists = await employeeRepository.ExistsAsync(id);
+            if (!exists)
             {
                 return NotFound();
             }
 
-            dbContext.Employees.Remove(employeeEntity);
-            dbContext.SaveChanges();
+            var result = await employeeRepository.DeleteAsync(id);
+            if (!result)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting employee.");
+            }
             return Ok();
         }
 
         [HttpGet("search")]
-        public IActionResult SearchEmployeesByName(string name)
+        public async Task<IActionResult> SearchEmployeesByName(string name)
         {
-            var employees = dbContext.Employees
-                .Where(e => EF.Functions.Like(e.Name, $"%{name}%"))
-                .ToList();
-
-            if (!employees.Any())
+            var employees = await employeeRepository.SearchByNameAsync(name);
+            if (employees.Count() == 0)
             {
                 return NotFound(new { Message = $"No employees found with name containing '{name}'." });
             }
@@ -106,29 +97,15 @@ namespace EmployeeAdminPortal.Controllers
         }
 
         [HttpGet("complex-search")]
-        public IActionResult SearchEmployeesByComplexQuery(string? name, decimal minSalary)
+        public async Task<IActionResult> SearchEmployeesByComplexQuery(string? name, decimal minSalary)
         {
-            var sqlQuery = @"
-                SELECT * 
-                FROM Employees 
-                WHERE (@name IS NULL OR Name LIKE {0})
-                AND Salary >= {1}";
-
-            
-
-            var employees = dbContext.Employees
-                 .FromSqlRaw(sqlQuery,
-                    new SqlParameter("@name", name != null ? $"%{name}%" : (object)DBNull.Value),
-                    new SqlParameter("@minSalary", minSalary))                
-                .ToList();
-
-            if (!employees.Any())
+            var employees = await employeeRepository.SearchByComplexQueryAsync(name, minSalary);
+            if (employees.Count() == 0)
             {
                 return NotFound(new { Message = $"No employees found with name containing '{name}' and salary >= {minSalary}." });
             }
 
             return Ok(employees);
         }
-
     }
 }

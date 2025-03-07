@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EmployeeAdminPortal.Models.Entities
+namespace EmployeeAdminPortal.Models
 {
     public class Employee
     {

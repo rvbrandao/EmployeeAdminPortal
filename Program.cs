@@ -1,5 +1,5 @@
 using EmployeeAdminPortal.Data;
-using Microsoft.Data.SqlClient;
+using EmployeeAdminPortal.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,9 @@ builder.Services.AddSwaggerGen();
 // Load the connection string based on the environment
 var stringconnection = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(stringconnection));
+
+builder.Services.AddTransient<IEmployeeRepository, EmployeeRepository>();
 
 var app = builder.Build();
 

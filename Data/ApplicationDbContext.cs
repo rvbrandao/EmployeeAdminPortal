@@ -1,4 +1,4 @@
-﻿using EmployeeAdminPortal.Models.Entities;
+﻿using EmployeeAdminPortal.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAdminPortal.Data
